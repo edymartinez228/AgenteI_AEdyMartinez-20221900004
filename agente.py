@@ -1,22 +1,25 @@
 import os
 from dotenv import load_dotenv
+from agno.agent import Agent
 from agno.models.openai.like import OpenAILike
 
 # Carga el archivo .env si ejecutas de forma local
 load_dotenv()
 
-# Lee las variables (Streamlit inyecta los Secrets automáticamente como variables de entorno)
+# Lee las variables dinámicamente (Streamlit inyecta los Secrets como variables de entorno)
 base_url = os.getenv("LM_STUDIO_BASE_URL")
 model_name = os.getenv("LM_STUDIO_MODEL")
-# Si no encuentra AI_API_KEY en la nube, usa el valor de relleno local "lm-studio"
+# Si no encuentra AI_API_KEY en la nube (Streamlit), usa el valor por defecto de LM Studio "lm-studio"
 api_key = os.getenv("AI_API_KEY", "lm-studio") 
 
+# Creamos la instancia del modelo configurada correctamente para local o la nube
 modelo_llm = OpenAILike(
     id=model_name,
     base_url=base_url,
-    api_key=api_key
+    api_key=api_key,
+    temperature=0.6,
+    max_tokens=1024,
 )
-
 
 def crear_agente_tutor() -> Agent:
     """
@@ -28,13 +31,7 @@ def crear_agente_tutor() -> Agent:
     """
     return Agent(
         name="Tutor IA",
-        model=OpenAILike(
-            id=LM_STUDIO_MODEL,
-            base_url=LM_STUDIO_BASE_URL,
-            api_key="lm-studio",  # LM Studio no valida esta clave, pero el SDK la exige
-            temperature=0.6,
-            max_tokens=1024,
-        ),
+        model=modelo_llm,  # Reutilizamos la instancia del modelo configurada arriba
         instructions=[
             "Eres un tutor experto en Inteligencia Artificial.",
             "Responde siempre en español, con un tono claro y didáctico.",
