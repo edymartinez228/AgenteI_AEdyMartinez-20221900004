@@ -11,15 +11,14 @@ base_url = os.getenv("LM_STUDIO_BASE_URL")
 model_name = os.getenv("LM_STUDIO_MODEL")
 api_key = os.getenv("AI_API_KEY", "lm-studio") 
 
-# Configuramos los encabezados HTTP explícitos para que Hugging Face acepte la petición sin fallar
-custom_headers = {"Authorization": f"Bearer {api_key}"}
-
-# Creamos la instancia del modelo configurada correctamente para la nube o entorno local
+# Creamos la instancia del modelo pasando los headers de forma segura dentro de client_kwargs
 modelo_llm = OpenAILike(
     id=model_name,
     base_url=base_url,
     api_key=api_key,
-    headers=custom_headers,  # Inyecta la clave de forma segura en la cabecera HTTP
+    client_kwargs={
+        "default_headers": {"Authorization": f"Bearer {api_key}"}
+    },
     temperature=0.6,
     max_tokens=1024,
 )
