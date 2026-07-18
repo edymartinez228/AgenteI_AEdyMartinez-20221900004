@@ -1,20 +1,18 @@
 import os
 from dotenv import load_dotenv
 from agno.agent import Agent
-from agno.models.openai import OpenAILike
+from agno.models.huggingface import HuggingFace
 
 # Carga el archivo .env si ejecutas de forma local
 load_dotenv()
 
-# Lee las variables dinámicamente (Streamlit inyecta los Secrets como variables de entorno)
-base_url = os.getenv("LM_STUDIO_BASE_URL")
+# Lee las variables dinámicamente desde el entorno de Streamlit Cloud
 model_name = os.getenv("LM_STUDIO_MODEL")
-api_key = os.getenv("AI_API_KEY", "lm-studio") 
+api_key = os.getenv("AI_API_KEY") 
 
-# Usamos OpenAILike con la ruta de importación corregida y los parámetros limpios
-modelo_llm = OpenAILike(
+# Usamos el conector nativo de Hugging Face provisto por Agno
+modelo_llm = HuggingFace(
     id=model_name,
-    base_url=base_url,
     api_key=api_key,
     temperature=0.6,
     max_tokens=1024,
@@ -23,10 +21,6 @@ modelo_llm = OpenAILike(
 def crear_agente_tutor() -> Agent:
     """
     Crea y devuelve una nueva instancia del Agente Tutor.
-
-    Se crea una instancia nueva por cada llamada (en lugar de reutilizar un
-    único objeto global) para evitar que el historial de conversación se
-    acumule entre distintas consultas hechas desde Streamlit.
     """
     return Agent(
         name="Tutor IA",
