@@ -29,22 +29,9 @@ st.write(
 BASE_URL = os.getenv("LM_STUDIO_BASE_URL", "")
 
 def modelo_disponible() -> bool:
-    """Verifica si el servidor del modelo (local o en la nube) está respondiendo."""
-    if not BASE_URL:
-        return False
-    try:
-        base = BASE_URL.rstrip("/")
-        # Si apunta a Hugging Face, hacemos un ping rápido a su API de inferencia
-        if "huggingface.co" in base:
-            model_name = os.getenv("LM_STUDIO_MODEL", "")
-            respuesta = requests.get(f"{base}/models/{model_name}", timeout=3)
-            return respuesta.status_code == 200
-        else:
-            # Validación estándar para entornos locales estilo OpenAI/LM Studio
-            respuesta = requests.get(f"{base}/models", timeout=3)
-            return respuesta.status_code == 200
-    except requests.exceptions.RequestException:
-        return False
+    """Verifica si las variables esenciales del servidor están configuradas en el entorno."""
+    # Si las variables esenciales existen en el entorno, asumimos que está listo
+    return bool(BASE_URL and os.getenv("LM_STUDIO_MODEL"))
 
 
 with st.sidebar:
