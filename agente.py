@@ -1,7 +1,7 @@
 import os
 from dotenv import load_dotenv
 from agno.agent import Agent
-from agno.models.openai import OpenAI
+from agno.models.openai import OpenAILike
 
 # Carga el archivo .env si ejecutas de forma local
 load_dotenv()
@@ -11,8 +11,8 @@ base_url = os.getenv("LM_STUDIO_BASE_URL")
 model_name = os.getenv("LM_STUDIO_MODEL")
 api_key = os.getenv("AI_API_KEY", "lm-studio") 
 
-# Usamos la clase OpenAI nativa pasándole la URL base y API key de Hugging Face
-modelo_llm = OpenAI(
+# Usamos OpenAILike con la ruta de importación corregida y los parámetros limpios
+modelo_llm = OpenAILike(
     id=model_name,
     base_url=base_url,
     api_key=api_key,
