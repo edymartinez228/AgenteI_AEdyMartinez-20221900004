@@ -10,7 +10,7 @@ load_dotenv()
 model_name = os.getenv("LM_STUDIO_MODEL")
 api_key = os.getenv("AI_API_KEY") 
 
-# Usamos el conector nativo de Hugging Face provisto por Agno
+# Usamos el conector nativo de Hugging Face
 modelo_llm = HuggingFace(
     id=model_name,
     api_key=api_key,
