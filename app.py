@@ -4,14 +4,14 @@ app.py
 Interfaz en Streamlit para el Agente Tutor de Inteligencia Artificial.
 
 El usuario escribe un tema y elige su nivel; el agente (definido en agente.py)
-consulta al modelo Qwen2.5-VL-3B-Instruct cargado en LM Studio y devuelve:
+consulta al modelo Qwen2.5-VL-3B-Instruct en la nube o local y devuelve:
 explicación, ejemplo práctico, analogía y pregunta de evaluación.
 """
 
 import os
 import requests
 import streamlit as st
-from agente import crear_agente_tutor, LM_STUDIO_BASE_URL
+from agente import crear_agente_tutor
 
 st.set_page_config(
     page_title="Agente Tutor de IA",
@@ -25,27 +25,38 @@ st.write(
     "con un ejemplo y una pregunta de evaluación."
 )
 
+# Obtenemos la URL base configurada (ya sea local o Hugging Face en la nube)
+BASE_URL = os.getenv("LM_STUDIO_BASE_URL", "")
 
-def lm_studio_disponible() -> bool:
-    """Verifica si el servidor local de LM Studio está respondiendo."""
+def modelo_disponible() -> bool:
+    """Verifica si el servidor del modelo (local o en la nube) está respondiendo."""
+    if not BASE_URL:
+        return False
     try:
-        base = LM_STUDIO_BASE_URL.rstrip("/")
-        respuesta = requests.get(f"{base}/models", timeout=2)
-        return respuesta.status_code == 200
+        base = BASE_URL.rstrip("/")
+        # Si apunta a Hugging Face, hacemos un ping rápido a su API de inferencia
+        if "huggingface.co" in base:
+            model_name = os.getenv("LM_STUDIO_MODEL", "")
+            respuesta = requests.get(f"{base}/models/{model_name}", timeout=3)
+            return respuesta.status_code == 200
+        else:
+            # Validación estándar para entornos locales estilo OpenAI/LM Studio
+            respuesta = requests.get(f"{base}/models", timeout=3)
+            return respuesta.status_code == 200
     except requests.exceptions.RequestException:
         return False
 
 
 with st.sidebar:
-    st.subheader("Estado de LM Studio")
-    if lm_studio_disponible():
-        st.success("Servidor local conectado")
+    st.subheader("Estado del Servidor IA")
+    if modelo_disponible():
+        st.success("Servidor del modelo conectado ✨")
     else:
-        st.error("No se detecta el servidor de LM Studio")
+        st.error("No se detecta el servidor del modelo")
         st.caption(
-            "Verifica que LM Studio esté abierto, el modelo "
-            "Qwen2.5-VL-3B-Instruct cargado y el servidor iniciado "
-            "en la pestaña Developer (puerto 1234)."
+            "Si estás en local, verifica que tu servidor esté corriendo. "
+            "Si estás en la nube, asegúrate de que los Secrets de Streamlit "
+            "tengan las variables correctas y tu token de Hugging Face sea válido."
         )
 
 nivel = st.selectbox(
@@ -78,16 +89,15 @@ if st.button("Explicar tema", type="primary"):
                 st.markdown(respuesta.content)
             except Exception as error:
                 st.error(
-                    "No fue posible conectar con LM Studio.\n\n"
+                    "No fue posible conectar con el servidor de Inteligencia Artificial.\n\n"
                     f"Detalle: {error}"
                 )
                 st.info(
-                    "Revisa que LM Studio esté abierto, con el modelo cargado "
-                    "y el servidor local iniciado antes de volver a intentarlo."
+                    "Verifica la configuración de red y las variables de entorno de la aplicación."
                 )
 
 st.divider()
 st.caption(
-    "Proyecto educativo con Python, Agno, Streamlit y LM Studio "
-    "(modelo local Qwen2.5-VL-3B-Instruct)."
+    "Proyecto educativo con Python, Agno, Streamlit y arquitectura flexible "
+    "(modelo Qwen2.5-VL-3B-Instruct)."
 )
