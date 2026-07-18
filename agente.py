@@ -1,25 +1,21 @@
-"""
-agente.py
----------
-Define el Agente Tutor de Inteligencia Artificial usando el framework Agno,
-conectado a un modelo ejecutado localmente en LM Studio a través de su
-API compatible con OpenAI (http://localhost:1234/v1).
-
-No se envía ninguna clave de API real: LM Studio no la requiere, por lo que
-se usa un valor de relleno ("lm-studio").
-"""
-
 import os
 from dotenv import load_dotenv
-from agno.agent import Agent
 from agno.models.openai.like import OpenAILike
 
-# Carga las variables definidas en el archivo .env (modelo y URL local)
+# Carga el archivo .env si ejecutas de forma local
 load_dotenv()
 
-# Valores por defecto en caso de que el .env no los defina
-LM_STUDIO_MODEL = os.getenv("LM_STUDIO_MODEL", "qwen2.5-vl-3b-instruct")
-LM_STUDIO_BASE_URL = os.getenv("LM_STUDIO_BASE_URL", "http://localhost:1234/v1")
+# Lee las variables (Streamlit inyecta los Secrets automáticamente como variables de entorno)
+base_url = os.getenv("LM_STUDIO_BASE_URL")
+model_name = os.getenv("LM_STUDIO_MODEL")
+# Si no encuentra AI_API_KEY en la nube, usa el valor de relleno local "lm-studio"
+api_key = os.getenv("AI_API_KEY", "lm-studio") 
+
+modelo_llm = OpenAILike(
+    id=model_name,
+    base_url=base_url,
+    api_key=api_key
+)
 
 
 def crear_agente_tutor() -> Agent:
