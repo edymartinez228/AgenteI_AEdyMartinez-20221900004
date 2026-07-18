@@ -9,14 +9,17 @@ load_dotenv()
 # Lee las variables dinámicamente (Streamlit inyecta los Secrets como variables de entorno)
 base_url = os.getenv("LM_STUDIO_BASE_URL")
 model_name = os.getenv("LM_STUDIO_MODEL")
-# Si no encuentra AI_API_KEY en la nube (Streamlit), usa el valor por defecto de LM Studio "lm-studio"
 api_key = os.getenv("AI_API_KEY", "lm-studio") 
 
-# Creamos la instancia del modelo configurada correctamente para local o la nube
+# Configuramos los encabezados HTTP explícitos para que Hugging Face acepte la petición sin fallar
+custom_headers = {"Authorization": f"Bearer {api_key}"}
+
+# Creamos la instancia del modelo configurada correctamente para la nube o entorno local
 modelo_llm = OpenAILike(
     id=model_name,
     base_url=base_url,
     api_key=api_key,
+    headers=custom_headers,  # Inyecta la clave de forma segura en la cabecera HTTP
     temperature=0.6,
     max_tokens=1024,
 )
@@ -31,7 +34,7 @@ def crear_agente_tutor() -> Agent:
     """
     return Agent(
         name="Tutor IA",
-        model=modelo_llm,  # Reutilizamos la instancia del modelo configurada arriba
+        model=modelo_llm,
         instructions=[
             "Eres un tutor experto en Inteligencia Artificial.",
             "Responde siempre en español, con un tono claro y didáctico.",
